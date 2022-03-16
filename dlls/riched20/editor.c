@@ -4097,8 +4097,8 @@ LRESULT editor_handle_message( ME_TextEditor *editor, UINT msg, WPARAM wParam,
     return 0;
   case WM_IME_STARTCOMPOSITION:
   {
-    editor->imeStartIndex=ME_GetCursorOfs(&editor->pCursors[0]);
     ME_DeleteSelection(editor);
+    editor->imeStartIndex=ME_GetCursorOfs(&editor->pCursors[0]);
     ME_CommitUndo(editor);
     ME_UpdateRepaint(editor, FALSE);
     return 0;
@@ -4109,7 +4109,6 @@ LRESULT editor_handle_message( ME_TextEditor *editor, UINT msg, WPARAM wParam,
 
     ME_Style *style = style_get_insert_style( editor, editor->pCursors );
     hIMC = ITextHost_TxImmGetContext(editor->texthost);
-    ME_DeleteSelection(editor);
     ME_SaveTempStyle(editor, style);
     if (lParam & (GCS_RESULTSTR|GCS_COMPSTR))
     {

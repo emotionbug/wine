@@ -117,6 +117,16 @@ void X11DRV_XIMLookupChars( const char *str, DWORD count )
 
     IME_SetResultString(wcOutput, dwOutput);
     HeapFree(GetProcessHeap(), 0, wcOutput);
+
+    /*
+     * After then if `CompositionString` is remaining, flushing it.
+     * i.e., Korean
+     */
+    if (CompositionString)
+    {
+        IME_SetCompositionString(SCS_SETSTR, CompositionString,
+                                 dwCompStringLength, NULL, 0);
+    }
 }
 
 static BOOL XIMPreEditStateNotifyCallback(XIC xic, XPointer p, XPointer data)
