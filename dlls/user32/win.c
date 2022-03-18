@@ -966,6 +966,17 @@ HWND WIN_CreateWindowEx( CREATESTRUCTW *cs, LPCWSTR className, HINSTANCE module,
           class.Buffer != className ? debugstr_wn(class.Buffer, class.Length / sizeof(WCHAR)) : "",
           cs->dwExStyle, cs->style, cs->x, cs->y, cs->cx, cs->cy,
           cs->hwndParent, cs->hMenu, cs->hInstance, cs->lpCreateParams );
+
+    /* Skip on kakao window appearance. */
+    if (unicode && cs->lpszName != 0 && ((ULONG_PTR) cs->lpszName >> 16))
+    {
+        if (lstrcmpW(cs->lpszName, L"KakaoTalkShadowWnd") == 0 ||
+            lstrcmpW(cs->lpszName, L"KakaoTalkEdgeWnd") == 0)
+        {
+            return 0;
+        }
+    }
+
     if(TRACE_ON(win)) dump_window_styles( cs->style, cs->dwExStyle );
 
     /* Fix the styles for MDI children */
