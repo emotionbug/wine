@@ -3692,9 +3692,12 @@ static BOOL show_window( HWND hwnd, INT cmd )
         break;
 
     case SW_SHOWNOACTIVATE:
-        swp |= SWP_NOACTIVATE | SWP_NOZORDER;
-        /* fall through */
+        /* Friends Or ChatList Click */
+        swp |= SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE;
+        if (style & WS_CHILD) swp |= SWP_NOACTIVATE | SWP_NOZORDER;
+        break;
     case SW_RESTORE:
+        swp |= SWP_NOACTIVATE | SWP_NOZORDER;
         /* fall through */
     case SW_SHOWNORMAL:  /* same as SW_NORMAL: */
     case SW_SHOWDEFAULT: /* FIXME: should have its own handler */
