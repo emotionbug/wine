@@ -117,6 +117,19 @@ void X11DRV_XIMLookupChars( const char *str, DWORD count )
 
     IME_SetResultString(wcOutput, dwOutput);
     HeapFree(GetProcessHeap(), 0, wcOutput);
+
+    /*
+     * In a special case for Hangul(Korean), when Composition is completed and
+     * this function is called, the new Composition disappears. so, calling
+     * IME_SetCompositionString again for makes composition will be
+     * starting.
+     */
+    if (CompositionString && dwCompStringLength >= sizeof(WCHAR) &&
+        IsHangul(((const WCHAR*) CompositionString)[0]))
+    {
+        IME_SetCompositionString(SCS_SETSTR, CompositionString,
+                                 dwCompStringLength, NULL, 0);
+    }
 }
 
 static BOOL XIMPreEditStateNotifyCallback(XIC xic, XPointer p, XPointer data)

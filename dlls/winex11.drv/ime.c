@@ -1050,8 +1050,8 @@ void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen)
     GenerateIMEMessage(imc, WM_IME_COMPOSITION, lpResult[0], GCS_RESULTSTR|GCS_RESULTCLAUSE);
     GenerateIMEMessage(imc, WM_IME_ENDCOMPOSITION, 0, 0);
 
-    if (!inComp)
-        ImmSetOpenStatus(imc, FALSE);
+    myPrivate->bInComposition = FALSE;
+    ImmSetOpenStatus(imc, FALSE);
 
     ImmUnlockIMC(imc);
 }

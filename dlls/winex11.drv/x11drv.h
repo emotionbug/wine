@@ -841,4 +841,31 @@ static inline BOOL is_window_rect_mapped( const RECT *rect )
             max( rect->bottom, rect->top + 1 ) > virtual_rect.top);
 }
 
+#define HANGUL_BASE                 0xac00
+#define HANGUL_LAST                 0xd7a3
+#define HANGUL_JAMO_BASE            0x1100
+#define HANGUL_JAMO_LAST            0x11F9
+#define HANGUL_COMPAT_JAMO_BASE     0x3130
+#define HANGUL_COMPAT_JAMO_LAST     0x318E
+#define HANGUL_LCOUNT 19
+#define HANGUL_VCOUNT 21
+#define HANGUL_TCOUNT 28
+#define HANGUL_NCOUNT (HANGUL_VCOUNT * HANGUL_TCOUNT)
+#define HANGUL_SCOUNT (HANGUL_LCOUNT * HANGUL_NCOUNT)
+
+/*
+ * This method exists to handle special cases related to Korean(Hangul).
+ */
+static inline BOOL IsHangul(WPARAM wParam)
+{
+    if (!wParam)
+    {
+        return FALSE;
+    }
+
+    return (wParam >= HANGUL_BASE && wParam < HANGUL_LAST) ||
+           (wParam >= HANGUL_COMPAT_JAMO_BASE && wParam < HANGUL_COMPAT_JAMO_LAST) ||
+           (wParam >= HANGUL_JAMO_BASE && wParam < HANGUL_JAMO_LAST);
+}
+
 #endif  /* __WINE_X11DRV_H */
