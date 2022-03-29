@@ -4102,40 +4102,57 @@ LRESULT editor_handle_message( ME_TextEditor *editor, UINT msg, WPARAM wParam,
     return 0;
   case WM_IME_STARTCOMPOSITION:
   {
-    editor->imeStartIndex=ME_GetCursorOfs(&editor->pCursors[0]);
     ME_DeleteSelection(editor);
+    editor->imeStartIndex = ME_GetCursorOfs(&editor->pCursors[0]);
     ME_CommitUndo(editor);
     ME_UpdateRepaint(editor, FALSE);
     return 0;
   }
   case WM_IME_COMPOSITION:
   {
-    HIMC hIMC;
-
-    ME_Style *style = style_get_insert_style( editor, editor->pCursors );
-    hIMC = ITextHost_TxImmGetContext(editor->texthost);
-    ME_DeleteSelection(editor);
-    ME_SaveTempStyle(editor, style);
     if (lParam & (GCS_RESULTSTR|GCS_COMPSTR))
     {
+        HIMC hIMC = ITextHost_TxImmGetContext(editor->texthost);
+        ME_Style *style = style_get_insert_style( editor, editor->pCursors );
         LPWSTR lpCompStr = NULL;
         DWORD dwBufLen;
         DWORD dwIndex = lParam & GCS_RESULTSTR;
+        DWORD dwBufStrLen;
         if (!dwIndex)
           dwIndex = GCS_COMPSTR;
 
+        ME_DeleteSelection(editor);
+        ME_SaveTempStyle(editor, style);
+
         dwBufLen = ImmGetCompositionStringW(hIMC, dwIndex, NULL, 0);
-        lpCompStr = HeapAlloc(GetProcessHeap(),0,dwBufLen + sizeof(WCHAR));
+        dwBufStrLen = dwBufLen / sizeof(WCHAR);
+        lpCompStr = HeapAlloc(GetProcessHeap(), 0, dwBufLen + sizeof(WCHAR));
         ImmGetCompositionStringW(hIMC, dwIndex, lpCompStr, dwBufLen);
-        lpCompStr[dwBufLen/sizeof(WCHAR)] = 0;
-        ME_InsertTextFromCursor(editor,0,lpCompStr,dwBufLen/sizeof(WCHAR),style);
+        lpCompStr[dwBufStrLen] = 0;
+        ME_InsertTextFromCursor(editor, 0, lpCompStr, dwBufStrLen, style);
         HeapFree(GetProcessHeap(), 0, lpCompStr);
 
         if (dwIndex == GCS_COMPSTR)
+        {
           set_selection_cursors(editor,editor->imeStartIndex,
-                          editor->imeStartIndex + dwBufLen/sizeof(WCHAR));
+                          editor->imeStartIndex + dwBufStrLen);
+        }
+        else
+        {
+            /*
+             * During Composition, change the start position if the completed
+             * characters are reflected.
+             */
+            editor->imeStartIndex += dwBufStrLen;
+        }
+        ME_ReleaseStyle(style);
     }
-    ME_ReleaseStyle(style);
+    else if (lParam & GCS_CURSORPOS)
+    {
+        set_selection_cursors(editor, editor->imeStartIndex,
+                              editor->imeStartIndex + (DWORD) wParam);
+    }
+
     ME_CommitUndo(editor);
     ME_UpdateRepaint(editor, FALSE);
     return 0;
