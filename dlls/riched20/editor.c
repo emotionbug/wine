@@ -243,6 +243,7 @@
 WINE_DEFAULT_DEBUG_CHANNEL(richedit);
 
 static BOOL ME_UpdateLinkAttribute(ME_TextEditor *editor, ME_Cursor *start, int nChars);
+static BOOL ME_NotifyIMECPSComplete(ME_TextEditor *editor);
 
 HINSTANCE dll_instance = NULL;
 BOOL me_debug = FALSE;
@@ -3045,6 +3046,8 @@ ME_TextEditor *ME_MakeEditor(ITextHost *texthost, BOOL bEmulateVersion10)
   ed->back_style = TXTBACK_OPAQUE;
   ITextHost_TxGetBackStyle( ed->texthost, &ed->back_style );
 
+  ed->imeStartIndex = -1;
+
   list_init( &ed->reobj_list );
   OleInitialize(NULL);
 
@@ -3888,6 +3891,7 @@ LRESULT editor_handle_message( ME_TextEditor *editor, UINT msg, WPARAM wParam,
   case WM_LBUTTONDOWN:
   {
     ME_CommitUndo(editor); /* End coalesced undos for typed characters */
+    ME_NotifyIMECPSComplete(editor);
     ITextHost_TxSetFocus(editor->texthost);
     ME_LButtonDown(editor, (short)LOWORD(lParam), (short)HIWORD(lParam),
                    ME_CalculateClickCount(editor, msg, wParam, lParam));
@@ -3918,6 +3922,7 @@ LRESULT editor_handle_message( ME_TextEditor *editor, UINT msg, WPARAM wParam,
   case WM_RBUTTONDOWN:
   case WM_RBUTTONDBLCLK:
     ME_CommitUndo(editor); /* End coalesced undos for typed characters */
+    ME_NotifyIMECPSComplete(editor);
     link_notify( editor, msg, wParam, lParam );
     goto do_default;
   case WM_CONTEXTMENU:
@@ -4548,4 +4553,21 @@ static BOOL ME_UpdateLinkAttribute(ME_TextEditor *editor, ME_Cursor *start, int 
     startCur = candidateEnd;
   } while (nChars > 0);
   return modified;
+}
+
+static BOOL ME_NotifyIMECPSComplete(ME_TextEditor *editor)
+{
+    if (editor->imeStartIndex >= 0)
+    {
+        HIMC hIMC = ITextHost_TxImmGetContext(editor->texthost);
+        if (hIMC)
+        {
+            ME_DeleteSelection(editor);
+            editor->imeStartIndex = ME_GetCursorOfs(&editor->pCursors[0]);
+            ImmNotifyIME(hIMC, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+            ITextHost_TxImmReleaseContext(editor->texthost, hIMC);
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
