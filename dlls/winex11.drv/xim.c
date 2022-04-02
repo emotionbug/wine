@@ -250,9 +250,32 @@ static void XIMPreEditCaretCallback(XIC ic, XPointer client_data,
     TRACE("Finished\n");
 }
 
+/**
+ * X11DRV_FindXIC
+ *
+ * This function finds the already created XIC in itself and parents.
+ * If only the specified handle is get via X11DRV_get_ic, the XIC can be exists
+ * in the parents and cannot be get.
+ */
+XIC X11DRV_FindXIC(HWND hwnd)
+{
+    XIC ic = NULL;
+
+    while (hwnd)
+    {
+        ic = get_win_data(hwnd)->xic;
+        if (ic)
+            break;
+        else
+            hwnd = GetParent(hwnd);
+    }
+
+    return ic;
+}
+
 void X11DRV_ForceXIMReset(HWND hwnd)
 {
-    XIC ic = X11DRV_get_ic(hwnd);
+    XIC ic = X11DRV_FindXIC(hwnd);
     if (ic)
     {
         char* leftover;

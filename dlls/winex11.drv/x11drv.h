@@ -828,6 +828,7 @@ extern BOOL X11DRV_InitXIM( const char *input_style ) DECLSPEC_HIDDEN;
 extern XIC X11DRV_CreateIC(XIM xim, struct x11drv_win_data *data) DECLSPEC_HIDDEN;
 extern void X11DRV_SetupXIM(void) DECLSPEC_HIDDEN;
 extern void X11DRV_XIMLookupChars( const char *str, DWORD count ) DECLSPEC_HIDDEN;
+extern XIC X11DRV_FindXIC(HWND hwnd) DECLSPEC_HIDDEN;
 extern void X11DRV_ForceXIMReset(HWND hwnd) DECLSPEC_HIDDEN;
 extern void X11DRV_SetPreeditState(HWND hwnd, BOOL fOpen) DECLSPEC_HIDDEN;
 
