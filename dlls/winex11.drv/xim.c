@@ -268,7 +268,7 @@ void X11DRV_SetPreeditState(HWND hwnd, BOOL fOpen)
     XIMPreeditState state;
     XVaNestedList attr;
 
-    ic = X11DRV_get_ic(hwnd);
+    ic = X11DRV_FindXIC(hwnd);
     if (!ic)
         return;
 
