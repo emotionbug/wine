@@ -290,7 +290,8 @@ extern void IME_UpdateAssociation(HWND focus) DECLSPEC_HIDDEN;
 extern BOOL IME_SetCompositionString(DWORD dwIndex, LPCVOID lpComp,
                                      DWORD dwCompLen, LPCVOID lpRead,
                                      DWORD dwReadLen) DECLSPEC_HIDDEN;
-extern void IME_SetResultString(LPWSTR lpResult, DWORD dwResultlen) DECLSPEC_HIDDEN;
+extern void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen,
+                                const WCHAR *compStr, DWORD dwCompStrLen) DECLSPEC_HIDDEN;
 
 extern void X11DRV_XDND_EnterEvent( HWND hWnd, XClientMessageEvent *event ) DECLSPEC_HIDDEN;
 extern void X11DRV_XDND_PositionEvent( HWND hWnd, XClientMessageEvent *event ) DECLSPEC_HIDDEN;

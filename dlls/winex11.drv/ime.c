@@ -1015,7 +1015,8 @@ BOOL IME_SetCompositionString(DWORD dwIndex, LPCVOID lpComp, DWORD dwCompLen,
                                     lpRead, dwReadLen);
 }
 
-void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen)
+void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen,
+                         const WCHAR *compStr, DWORD dwCompStrLen)
 {
     HIMC imc;
     LPINPUTCONTEXT lpIMC;
@@ -1028,7 +1029,7 @@ void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen)
     if (lpIMC == NULL)
         return;
 
-    newCompStr = updateCompStr(lpIMC->hCompStr, NULL, 0);
+    newCompStr = updateCompStr(lpIMC->hCompStr, compStr, dwCompStrLen);
     ImmDestroyIMCC(lpIMC->hCompStr);
     lpIMC->hCompStr = newCompStr;
 
@@ -1046,12 +1047,21 @@ void IME_SetResultString(LPWSTR lpResult, DWORD dwResultLen)
         GenerateIMEMessage(imc, WM_IME_STARTCOMPOSITION, 0, 0);
     }
 
-    GenerateIMEMessage(imc, WM_IME_COMPOSITION, 0, GCS_COMPSTR);
     GenerateIMEMessage(imc, WM_IME_COMPOSITION, lpResult[0], GCS_RESULTSTR|GCS_RESULTCLAUSE);
-    GenerateIMEMessage(imc, WM_IME_ENDCOMPOSITION, 0, 0);
+    if (dwCompStrLen > 0)
+    {
+        GenerateIMEMessage(imc, WM_IME_COMPOSITION, compStr[0], GCS_COMPSTR);
+    }
+    else
+    {
+        GenerateIMEMessage(imc, WM_IME_COMPOSITION, 0, GCS_COMPSTR);
+    }
 
     if (!inComp)
+    {
+        GenerateIMEMessage(imc, WM_IME_ENDCOMPOSITION, 0, 0);
         ImmSetOpenStatus(imc, FALSE);
+    }
 
     ImmUnlockIMC(imc);
 }
